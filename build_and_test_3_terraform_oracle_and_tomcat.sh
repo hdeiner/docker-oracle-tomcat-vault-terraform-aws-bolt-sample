@@ -5,8 +5,8 @@ figlet -w 120 -f standard "Terraform Oracle and Tomcat"
 cd terraform-oracle-tomcat
 terraform init
 terraform apply -auto-approve
-echo `terraform output oracle_dns` > ../.oracle_dns
-echo `terraform output tomcat_dns` > ../.tomcat_dns
+echo `terraform output oracle_dns | grep -o '".*"' | cut -d '"' -f2` > ../.oracle_dns
+echo `terraform output tomcat_dns | grep -o '".*"' | cut -d '"' -f2` > ../.tomcat_dns
 cd ..
 
 export VAULT_DNS=$(echo `cat ./.vault_dns`)
