@@ -10,7 +10,7 @@ echo "VAULT_TOKEN is "$VAULT_TOKEN
 
 vault login -address="http://$VAULT_DNS:8200" $VAULT_TOKEN
 
-vault kv get -address="http://$VAULT_DNS:8200" oracle/dev/$RUNBATCH/dns | tee ./.temp
+vault kv get -address="http://$VAULT_DNS:8200" SYSTEMS_CONFIG/$RUNBATCH/oracle/dns | tee ./.temp
 while read line
 do
     echo "$line" | grep  "^dns\ *.*$" | xargs | cut -d ' ' -f2 > ./.value
@@ -21,7 +21,7 @@ do
 done < ./.temp
 rm ./.value ./.temp
 
-vault kv get -address="http://$VAULT_DNS:8200" tomcat/dev/$RUNBATCH/dns | tee ./.temp
+vault kv get -address="http://$VAULT_DNS:8200" SYSTEMS_CONFIG/$RUNBATCH/tomcat/dns | tee ./.temp
 while read line
 do
     echo "$line" | grep  "^dns\ *.*$" | xargs | cut -d ' ' -f2 > ./.value
@@ -43,10 +43,11 @@ bolt command run 'chmod +x /home/ubuntu/provision_oracle.sh' --nodes $ORACLE_DNS
 echo "remote execution: /home/ubuntu/provision_oracle.sh"
 bolt command run '/home/ubuntu/provision_oracle.sh' --nodes $ORACLE_DNS --user 'ubuntu' --no-host-key-check
 
-vault kv put -address="http://$VAULT_DNS:8200" oracle/dev/$RUNBATCH/user user=system
-vault kv put -address="http://$VAULT_DNS:8200" oracle/dev/$RUNBATCH/password password=oracle
+vault kv put -address="http://$VAULT_DNS:8200" SYSTEMS_CONFIG/$RUNBATCH/oracle/user user=system
+vault kv put -address="http://$VAULT_DNS:8200" SYSTEMS_CONFIG/$RUNBATCH/oracle/password password=oracle
+vault kv put -address="http://$VAULT_DNS:8200" SYSTEMS_CONFIG/$RUNBATCH/oracle/status status="provisioned"
 
-vault kv get -address="http://$VAULT_DNS:8200" oracle/dev/$RUNBATCH/user | tee ./.temp
+vault kv get -address="http://$VAULT_DNS:8200" SYSTEMS_CONFIG/$RUNBATCH/oracle/user | tee ./.temp
 while read line
 do
     echo "$line" | grep  "^user\ *.*$" | xargs | cut -d ' ' -f2 > ./.value
@@ -57,7 +58,7 @@ do
 done < ./.temp
 rm ./.value ./.temp
 
-vault kv get -address="http://$VAULT_DNS:8200" oracle/dev/$RUNBATCH/password | tee ./.temp
+vault kv get -address="http://$VAULT_DNS:8200" SYSTEMS_CONFIG/$RUNBATCH/oracle/password | tee ./.temp
 while read line
 do
     echo "$line" | grep  "^password\ *.*$" | xargs | cut -d ' ' -f2 > ./.value
@@ -81,6 +82,8 @@ echo "password: "$ORACLE_PASSWORD >> liquibase.properties
 echo "Create database schema and load sample data"
 liquibase --changeLogFile=src/main/db/changelog.xml update
 
+vault kv put -address="http://$VAULT_DNS:8200" SYSTEMS_CONFIG/$RUNBATCH/oracle/status status="test database created"
+
 echo "Build fresh war for Tomcat deployment"
 mvn -q clean compile war:war
 
@@ -100,3 +103,5 @@ echo "upload: target/passwordAPI.war' to /home/ubuntu/passwordAPI.war"
 bolt file upload 'target/passwordAPI.war' '/home/ubuntu/passwordAPI.war' --nodes $TOMCAT_DNS --user 'ubuntu' --no-host-key-check
 echo "remote execution: home/ubuntu/provision_tomcat.sh"
 bolt command run '/home/ubuntu/provision_tomcat.sh' --nodes $TOMCAT_DNS --user 'ubuntu' --no-host-key-check
+
+vault kv put -address="http://$VAULT_DNS:8200" SYSTEMS_CONFIG/$RUNBATCH/tomcat/status status="provisioned"

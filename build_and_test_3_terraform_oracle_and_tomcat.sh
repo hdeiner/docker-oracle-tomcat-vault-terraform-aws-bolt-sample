@@ -19,12 +19,14 @@ export TOMCAT=$(echo `cat ./.tomcat_dns`)
 echo "ORACLE at "$ORACLE
 echo "TOMCAT at "$TOMCAT
 
-echo `date +%Y%m%d%H%M%S` > ./.runbatch
+echo "INCENTIVES/DESKTOP_TEST/AWS_HOSTED_CONTAINERS/howard.deiner/"`date +%Y%m%d%H%M%S` > ./.runbatch
 export RUNBATCH=$(echo `cat ./.runbatch`)
 
 vault login -address="http://$VAULT_DNS:8200" $VAULT_TOKEN
-vault secrets enable -address="http://$VAULT_DNS:8200" -version=2 -path=oracle kv
-vault secrets enable -address="http://$VAULT_DNS:8200" -version=2 -path=tomcat kv
+vault secrets enable -address="http://$VAULT_DNS:8200" -version=2 -path=SYSTEMS_CONFIG kv
 
-vault kv put -address="http://$VAULT_DNS:8200" oracle/dev/$RUNBATCH/dns dns=$ORACLE
-vault kv put -address="http://$VAULT_DNS:8200" tomcat/dev/$RUNBATCH/dns dns=$TOMCAT
+vault kv put -address="http://$VAULT_DNS:8200" SYSTEMS_CONFIG/$RUNBATCH/oracle/dns dns=$ORACLE
+vault kv put -address="http://$VAULT_DNS:8200" SYSTEMS_CONFIG/$RUNBATCH/oracle/status status="not provisioned"
+
+vault kv put -address="http://$VAULT_DNS:8200" SYSTEMS_CONFIG/$RUNBATCH/tomcat/dns dns=$TOMCAT
+vault kv put -address="http://$VAULT_DNS:8200" SYSTEMS_CONFIG/$RUNBATCH/tomcat/status status="not provisioned"
