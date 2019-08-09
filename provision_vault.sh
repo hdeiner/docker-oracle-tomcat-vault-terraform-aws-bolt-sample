@@ -15,7 +15,6 @@ sudo apt-get -qq install -y docker-ce
 echo "Start the vault server"
 sudo docker network create -d bridge mynetwork
 sudo docker run --cap-add=IPC_LOCK -d -p 8200:8200 --network=mynetwork -v $(pwd)/vault:/vault --name vaultserver vault server
-
 echo "Waiting for Vault to start"
 while true ; do
   result=$(sudo docker logs vaultserver 2> /dev/null | grep -c "==> Vault server started! Log data will stream in below:")

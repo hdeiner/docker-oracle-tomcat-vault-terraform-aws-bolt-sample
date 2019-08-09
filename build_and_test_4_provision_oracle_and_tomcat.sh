@@ -36,8 +36,11 @@ echo "ORACLE at "$ORACLE_DNS
 echo "TOMCAT at "$TOMCAT_DNS
 
 echo "Provision Oracle"
+echo "upload: provision_oracle.sh to /home/ubuntu/provision_oracle.sh"
 bolt file upload 'provision_oracle.sh' '/home/ubuntu/provision_oracle.sh' --nodes $ORACLE_DNS --user 'ubuntu' --no-host-key-check
+echo "remote execution: chmod +x /home/ubuntu/provision_oracle.sh"
 bolt command run 'chmod +x /home/ubuntu/provision_oracle.sh' --nodes $ORACLE_DNS --user 'ubuntu' --no-host-key-check
+echo "remote execution: /home/ubuntu/provision_oracle.sh"
 bolt command run '/home/ubuntu/provision_oracle.sh' --nodes $ORACLE_DNS --user 'ubuntu' --no-host-key-check
 
 vault kv put -address="http://$VAULT_DNS:8200" oracle/dev/$RUNBATCH/user user=system
@@ -87,8 +90,13 @@ echo "user="$ORACLE_USER >> oracleConfig.properties
 echo "password="$ORACLE_PASSWORD >> oracleConfig.properties
 
 echo "Provision Tomcat"
+echo "upload: provision_tomcat.sh' to /home/ubuntu/provision_tomcat.sh"
 bolt file upload 'provision_tomcat.sh' '/home/ubuntu/provision_tomcat.sh' --nodes $TOMCAT_DNS --user 'ubuntu' --no-host-key-check
+echo "remote execution: chmod +x /home/ubuntu/provision_tomcat.sh"
 bolt command run 'chmod +x /home/ubuntu/provision_tomcat.sh' --nodes $TOMCAT_DNS --user 'ubuntu' --no-host-key-check
+echo "upload: oracleConfig.properties' to /home/ubuntu/oracleConfig.properties"
 bolt file upload 'oracleConfig.properties' '/home/ubuntu/oracleConfig.properties' --nodes $TOMCAT_DNS --user 'ubuntu' --no-host-key-check
+echo "upload: target/passwordAPI.war' to /home/ubuntu/passwordAPI.war"
 bolt file upload 'target/passwordAPI.war' '/home/ubuntu/passwordAPI.war' --nodes $TOMCAT_DNS --user 'ubuntu' --no-host-key-check
+echo "remote execution: home/ubuntu/provision_tomcat.sh"
 bolt command run '/home/ubuntu/provision_tomcat.sh' --nodes $TOMCAT_DNS --user 'ubuntu' --no-host-key-check
